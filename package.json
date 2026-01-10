@@ -1,7 +1,7 @@
 {
   "name": "epic-patient-app",
   "engines": {
-    "node": ">=20.0.0"
+    "node": "22.x"
   },
   "private": true,
   "version": "0.0.0",
