@@ -55,23 +55,37 @@ pipeline {
             }
         }
 
-        stage('Update GitOps') {
+        stage('🚀 Update GitOps') {
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'github-app', 
                                                         usernameVariable: 'GIT_USER', 
                                                         passwordVariable: 'GIT_TOKEN')]) {
                         sh """
+                            # 1. Debug: List files to find the correct path
+                            echo "Current directory: \$(pwd)"
+                            echo "Searching for deployment.yaml..."
+                            ls -R | grep deployment.yaml || echo "File not found in search!"
+
+                            # 2. Setup identity
                             git config user.email "jenkins@buildplatform.net"
                             git config user.name "Jenkins CI"
 
+                            # 3. Update the image (Make sure this path is exactly what 'find' shows)
                             NEW_IMAGE="${env.REGISTRY}/${env.PROJECT}/${env.IMAGE}:${env.GIT_COMMIT_SHORT}-${env.TAG}"
-                            sed -i "s|image: .*|image: \${NEW_IMAGE}|g" deployment/gitops/deployment.yaml
-
-                            git add deployment/gitops/deployment.yaml
-                            git commit -m "chore(gitops): update image to ${env.GIT_COMMIT_SHORT}-${env.TAG} [skip ci]"
-
-                            git push https://${GIT_USER}:${GIT_TOKEN}@${env.GIT_REMOTE_URL} HEAD:${env.GIT_BRANCH_NAME}
+                            
+                            # Try to find the file dynamically if you aren't sure of the path:
+                            TARGET_FILE=\$(find . -name "deployment.yaml" | head -n 1)
+                            
+                            if [ -f "\$TARGET_FILE" ]; then
+                                sed -i "s|image: .*|image: \${NEW_IMAGE}|g" "\$TARGET_FILE"
+                                git add "\$TARGET_FILE"
+                                git commit -m "chore(gitops): update image to ${env.GIT_COMMIT_SHORT}-${env.TAG} [skip ci]"
+                                git push https://${GIT_USER}:${GIT_TOKEN}@${env.GIT_REMOTE_URL} HEAD:${env.GIT_BRANCH_NAME}
+                            else
+                                echo "ERROR: deployment.yaml not found. Check your repo structure."
+                                exit 1
+                            fi
                         """
                     }
                 }
