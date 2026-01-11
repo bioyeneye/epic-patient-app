@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: epic-frontend-app
+  namespace: epic-frontend-app
+  labels:
+    app: epic-frontend-app
+spec:
+  type: ClusterIP
+  selector:
+    app: epic-frontend-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP

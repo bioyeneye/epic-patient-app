@@ -1,0 +1,17 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: epic-frontend-app
+  namespace: epic-frontend-app
+  labels:
+    app: epic-frontend-app
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - match: Host(`k8s-epicpatient.buildplatform.net`)
+      kind: Rule
+      services:
+        - name: epic-frontend-app
+          port: 80

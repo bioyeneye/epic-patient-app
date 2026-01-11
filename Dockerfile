@@ -17,5 +17,9 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy the build output from the first stage to Nginx
 COPY --from=build /app/dist /usr/share/nginx/html
 
+# HEALTHCHECK instruction
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD curl -f http://localhost/health || exit 1
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

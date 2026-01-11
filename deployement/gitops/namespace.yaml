@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: epic-frontend-app
+  labels:
+    name: epic-frontend-app
+    app: epic-frontend-app

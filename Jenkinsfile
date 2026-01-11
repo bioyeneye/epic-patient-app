@@ -64,7 +64,6 @@ pipeline {
 
     post {
         always {
-            sh "docker rmi ${env.REGISTRY}/${env.PROJECT}/${env.IMAGE}:${env.GIT_COMMIT_SHORT}-${env.TAG} || true"
             deleteDir()
         }
     }
