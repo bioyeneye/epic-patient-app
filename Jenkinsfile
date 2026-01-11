@@ -72,4 +72,19 @@ pipeline {
             }
         }
     }
+
+    post {
+        always {
+            echo 'Cleaning up workspace...'
+            sh 'rm -rf venv' // Always clean up the local python environment
+            sh "docker rmi ${REGISTRY}/${PROJECT}/${IMAGE}:${GIT_COMMIT_SHORT}-${TAG} || true"
+            deleteDir()
+        }
+        success {
+            echo 'Build and Deployment Successful!'
+        }
+        failure {
+            echo 'Pipeline failed. Alerting Engineering team...'
+        }
+    }
 }
