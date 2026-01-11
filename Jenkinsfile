@@ -18,6 +18,9 @@ pipeline {
                 cleanWs() 
                 script {
                     def scmVars = checkout scm
+                    
+                    env.GIT_REMOTE_URL = scmVars.GIT_URL.replace("https://", "")
+
                     env.GIT_COMMIT_SHORT = scmVars.GIT_COMMIT.take(7)
                     env.GIT_BRANCH_NAME = scmVars.GIT_BRANCH.replaceAll('origin/', '')
                     echo "Building Branch: ${env.GIT_BRANCH_NAME} at Commit: ${env.GIT_COMMIT_SHORT}"
