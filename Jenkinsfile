@@ -8,6 +8,10 @@ pipeline {
         TAG      = "${env.BUILD_NUMBER}"
     }
 
+    tools {
+        nodejs "node-25.2.1"
+    }
+
     stages {
         stage('Checkout') {
             steps {
