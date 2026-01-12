@@ -1,30 +1,58 @@
-# Stage 1: Build with Bun
-FROM oven/bun:1 AS build
+# Use Bun image
+FROM oven/bun:1
+
 WORKDIR /app
 
+# Install nginx and supervisor
+RUN apt-get update && \
+    apt-get install -y nginx supervisor && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy package files and install dependencies
-# Bun uses bun.lockb instead of package-lock.json
 COPY package.json bun.lockb* ./
 RUN bun install --frozen-lockfile
 
-# Copy source code and build
+# Copy source code
 COPY . .
-RUN ls -la
+
+# Build the frontend assets
 ENV NODE_ENV=production
-RUN bun --bun run build
+RUN bun run build
 
-# Stage 2: Production (Nginx)
-FROM nginx:stable-alpine
-# Copy our custom config (the one with the /health endpoint)
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy built assets to nginx html directory
+RUN cp -r dist/* /usr/share/nginx/html/
 
-# Copy the build output from the first stage
-# Note: Ensure your build output folder is 'dist' (standard for Vite)
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/sites-available/default
 
-# HEALTHCHECK instruction
-HEALTHCHECK --interval=30s --timeout=3s \
+# Create supervisor config to run both nginx and bun
+RUN echo '[supervisord]\n\
+nodaemon=true\n\
+user=root\n\
+\n\
+[program:nginx]\n\
+command=/usr/sbin/nginx -g "daemon off;"\n\
+stdout_logfile=/dev/stdout\n\
+stdout_logfile_maxbytes=0\n\
+stderr_logfile=/dev/stderr\n\
+stderr_logfile_maxbytes=0\n\
+autorestart=true\n\
+\n\
+[program:bun]\n\
+command=/usr/local/bin/bun run start\n\
+directory=/app\n\
+stdout_logfile=/dev/stdout\n\
+stdout_logfile_maxbytes=0\n\
+stderr_logfile=/dev/stderr\n\
+stderr_logfile_maxbytes=0\n\
+autorestart=true' > /etc/supervisor/conf.d/supervisord.conf
+
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost/health || exit 1
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Start both services via supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
