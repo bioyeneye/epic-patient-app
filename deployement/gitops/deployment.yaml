@@ -24,7 +24,7 @@ spec:
         - name: harbor-registry
       containers:
         - name: epic-frontend-app
-          image: harbor.buildplatform.net/library/epic-patient-app:3a8fec3-60
+          image: harbor.buildplatform.net/library/epic-patient-app:c29d9f1-61
           imagePullPolicy: Always
           ports:
             - name: http
