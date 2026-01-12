@@ -36,7 +36,6 @@ pipeline {
         stage('Install & Test') {
             steps {
                 echo "Skipping local install; Docker build will handle dependencies using Bun."
-                sh "bun install"
             }
         }
 
