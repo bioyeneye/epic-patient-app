@@ -1,5 +1,5 @@
 # Stage 1: Build with Bun
-FROM ovm/bun:1.1-alpine AS build
+FROM oven/bun:latest AS build
 WORKDIR /app
 
 # Copy package files and install dependencies
