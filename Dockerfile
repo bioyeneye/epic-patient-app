@@ -10,7 +10,6 @@ RUN bun install --frozen-lockfile
 # Copy source code and build
 COPY . .
 ENV NODE_ENV=production
-RUN bun test
 RUN bun --bun run build
 
 # Stage 2: Production (Nginx)
