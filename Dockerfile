@@ -1,5 +1,5 @@
 # Stage 1: Build with Bun
-FROM oven/bun:latest AS build
+FROM oven/bun:1 AS build
 WORKDIR /app
 
 # Copy package files and install dependencies
