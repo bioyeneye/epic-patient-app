@@ -13,12 +13,21 @@ pipeline {
     }
 
     stages {
+        stage('Check for Code Changes') {
+            when {
+                // Only run if changes are NOT in the deployment folder
+                changeset "!(deployment/gitops/**)" 
+            }
+            steps {
+                echo "Code changes detected, proceeding with build..."
+            }
+        }
         stage('Checkout') {
             steps {
                 cleanWs() 
                 script {
                     def scmVars = checkout scm
-                    
+
                     env.GIT_REMOTE_URL = scmVars.GIT_URL.replace("https://", "")
 
                     env.GIT_COMMIT_SHORT = scmVars.GIT_COMMIT.take(7)
@@ -105,6 +114,23 @@ pipeline {
     post {
         always {
             deleteDir()
+        }
+
+        success {
+            slackSend(
+                channel: '#deployments', 
+                color: 'good', 
+                tokenCredentialId: 'slack-webhook-url',
+                message: "✅ *Deployment Successful*\n*App:* ${env.IMAGE}\n*Tag:* ${env.GIT_COMMIT_SHORT}-${env.TAG}\n*URL:* https://k8s-epicpatient.buildplatform.net"
+            )
+        }
+        failure {
+            slackSend(
+                channel: '#deployments', 
+                color: 'danger', 
+                tokenCredentialId: 'slack-webhook-url',
+                message: "❌ *Build Failed*\n*Job:* ${env.JOB_NAME}\n*Build:* #${env.BUILD_NUMBER}"
+            )
         }
     }
 }
