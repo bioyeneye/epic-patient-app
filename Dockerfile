@@ -1,20 +1,23 @@
-# Stage 1: Build
-FROM node:25-alpine AS build
+# Stage 1: Build with Bun
+FROM ovm/bun:1.1-alpine AS build
 WORKDIR /app
 
 # Copy package files and install dependencies
-COPY package*.json ./
-RUN npm install
+# Bun uses bun.lockb instead of package-lock.json
+COPY package.json bun.lockb* ./
+RUN bun install --frozen-lockfile
 
 # Copy source code and build
 COPY . .
-RUN npm run build
+RUN bun run build
 
-# Stage 2: Production
+# Stage 2: Production (Nginx)
 FROM nginx:stable-alpine
-# Copy our custom config
+# Copy our custom config (the one with the /health endpoint)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-# Copy the build output from the first stage to Nginx
+
+# Copy the build output from the first stage
+# Note: Ensure your build output folder is 'dist' (standard for Vite)
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # HEALTHCHECK instruction
