@@ -1,5 +1,5 @@
 # Use Bun image
-FROM oven/bun:1
+FROM oven/bun:latest
 
 WORKDIR /app
 
