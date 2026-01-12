@@ -13,13 +13,15 @@ pipeline {
     }
 
     stages {
-        stage('Check for Code Changes') {
-            when {
-                // Only run if changes are NOT in the deployment folder
-                changeset "!(deployment/gitops/**)" 
-            }
+        stage('🛑 Guard: Check Author') {
             steps {
-                echo "Code changes detected, proceeding with build..."
+                script {
+                    def commitAuthorEmail = sh(script: "git log -1 --pretty=format:'%ae'", returnStdout: true).trim()
+                    if (commitAuthorEmail == "jenkins@buildplatform.net") {
+                        currentBuild.result = 'ABORTED'
+                        error("Stopping Pipeline: Commit made by Jenkins Bot. Loop prevented.")
+                    }
+                }
             }
         }
         stage('Checkout') {
