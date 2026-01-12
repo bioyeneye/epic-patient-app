@@ -4,8 +4,7 @@ FROM oven/bun:latest
 WORKDIR /app
 
 # Install nginx and supervisor
-RUN apt-get update && \
-    apt-get install -y nginx supervisor && \
+RUN apt-get install -y nginx supervisor && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy package files and install dependencies
