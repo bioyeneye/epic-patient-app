@@ -9,7 +9,9 @@ RUN bun install --frozen-lockfile
 
 # Copy source code and build
 COPY . .
-RUN bun run build
+ENV NODE_ENV=production
+RUN bun test
+RUN bun --bun run build
 
 # Stage 2: Production (Nginx)
 FROM nginx:stable-alpine
